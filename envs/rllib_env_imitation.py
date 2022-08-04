@@ -195,7 +195,7 @@ class EnvRunner(object):
         self.trainer = trainers[0]
         self.env = env
         self.config = config
-        self.explore = False
+        self.explore = True
         '''
         full: Evaluate the entire model
         pass_through: Evaluate the motor_decoder only
@@ -247,28 +247,8 @@ class EnvRunner(object):
                 mean = policy.model._cur_latent_prior_mu[0].detach().numpy().copy()
                 logstd = policy.model._cur_latent_prior_logvar[0].detach().numpy().copy()
                 z_task = np.random.normal(loc=mean, scale=np.exp(logstd))
-            elif prior_type == 'hypersphere_uniform':
-                z_task = np.random.uniform(
-                    size=policy.model._task_encoder_output_dim)
-                z_task /= np.linalg.norm(z_task)
-            elif prior_type == 'uniform':
-                z_task = np.random.uniform(
-                    size=policy.model._task_encoder_output_dim)
-            elif prior_type == 'softmax':
-                def softmax(x, axis=None):
-                    x = x - x.max(axis=axis, keepdims=True)
-                    y = np.exp(x)
-                    return y / y.sum(axis=axis, keepdims=True)
-                z_task = np.random.normal(
-                    size=policy.model._task_encoder_output_dim)
-                z_task = softmax(z_task)
-            elif prior_type == 'hardmax':
-                z_task = np.zeros(policy.model._task_encoder_output_dim)
-                idx = np.random.choice(policy.model._task_encoder_output_dim)
-                z_task[idx] = 1.0
             else:
                 raise NotImplementedError
-            # print(z_task)
             logits, _ = policy.model.forward_decoder(
                 z_body=torch.Tensor([self.env.base_env.state_body(0)]),
                 z_task=torch.Tensor([z_task]),
@@ -282,8 +262,6 @@ class EnvRunner(object):
                 action = np.random.normal(loc=mean, scale=np.exp(logstd))
             else:
                 action = mean
-            # print('z_task:', z_task)
-            # print('action:', action)
         else:
             raise NotImplementedError
             

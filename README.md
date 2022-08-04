@@ -54,7 +54,7 @@ pip install pybullet==3.1.7 ray[rllib]==1.11.0 pandas requests
 To test installation, please see the script below and check whether the simulation environment is loaded properly.
 
 ```
-python3 rllib_driver.py --mode load --spec data/spec/pfnn/pfnn_test.yaml --project_dir ../PhysicsVAE/
+python3 rllib_driver.py --mode load --spec data/spec/loco/loco_test.yaml --project_dir ../PhysicsVAE/
 ```
 
 ### Training
@@ -65,16 +65,16 @@ The process of training includes 3 steps: preparing expert demonstrations, pre-t
 
 In principle, expert demonstrations (s1, a1, s2, a2, ...) from any existing controllers can be used. In our implementation, we use deep RL imitation controllers *ScaDiver* to generate our demonstrations. To make this repo self-contained, *ScaDiver* codes and training scrips are included in this repo. Please see the original [repo](https://github.com/facebookresearch/ScaDiver) for more details.
 
-Please run the script below to learn a *ScaDiver* imitation policy for the locomotion (PFNN) dataset.
+Please run the script below to learn a *ScaDiver* imitation policy for the locomotion dataset. Here, we created the locomotion data by runnning the pre-trained PFNN [Holden et al. 2017] controller with random joystick inputs.
 
 ```
-python3 rllib_driver.py --mode train --spec data/spec/pfnn/pfnn_imitation.yaml --project_dir ../PhysicsVAE/ --local_dir SAVE_DIR_FOR_CHECKPOINT --num_workers 40 --num_cpus 320 --num_gpus 0
+python3 rllib_driver.py --mode train --spec data/spec/loco/loco_imitation.yaml --project_dir ../PhysicsVAE/ --local_dir SAVE_DIR_FOR_CHECKPOINT --num_workers 40 --num_cpus 320 --num_gpus 0
 ```
 
 Once learned, you can generate expert demonstrations (s1, a1, s2, a2, ...) by the following script. Our implementation to genearte this only utilize a single CPU, so please keep in mind that this process can take several hours. For example, if we want to create motions that is 100 minutes long in total (10 min x 10 iteration), in some slow workstations, you may really need to wait for 100 minutes because physics simulation is computationally expensive. 
 
 ```
-python3 rllib_driver.py --mode gen_expert_demo --spec data/spec/pfnn/pfnn_imitation.yaml --project_dir ../PhysicsVAE/ --checkpoint SAVED_CHECKPOINT
+python3 rllib_driver.py --mode gen_expert_demo --spec data/spec/loco/loco_imitation.yaml --project_dir ../PhysicsVAE/ --checkpoint SAVED_CHECKPOINT
 ```
 
 Once finished, you will get a pickled file that includes the demonstrations of which data structure looks like below. For more details, please refer to "train_physics_vae.py".
@@ -136,7 +136,7 @@ python train_physics_vae.py --max_iter 500 --max_iter_world_model 0 --data_train
 The simulation environment with the learned model can be loaded by the script below. After the system is loaded, press ***a*** to run/stop the simulation and ***r*** to reset the simulation. Use ***q*** to change the policy evaluation method, where *full* means that the entire model (task encoder + motor decoder) will be used to generate the action while *pass_through* will only infer the motor decoder by using the preprioceptive state and a random noise from the standard normal distribution. Please refer to "rllib_env_imitation.py" for more details.
 
 ```
-python3 rllib_driver.py --mode load --spec data/spec/pfnn/pfnn_imitation.yaml --project_dir ../PhysicsVAE/ --checkpoint SAVED_CHECKPOINT
+python3 rllib_driver.py --mode load --spec data/spec/loco/loco_imitation.yaml --project_dir ../PhysicsVAE/ --checkpoint SAVED_CHECKPOINT
 ```
 
 ## Precomputed Data & Pretrained Model

@@ -463,7 +463,7 @@ class PhysicsVAE(TorchModelV2, nn.Module):
         "project_dir": None,
         
         "log_std_type": "constant",
-        "sample_std": 1.0,
+        "sample_std": 0.1,
 
         "load_weights": None,
 
@@ -624,6 +624,7 @@ class PhysicsVAE(TorchModelV2, nn.Module):
         else:
             raise NotImplementedError("Unknown latent_prior_type:"+latent_prior_type)
 
+        self._latent_prior = None
         if latent_prior_type in ["normal_state_mean_one_std"]:
             self._latent_prior, _ = \
                 create_layer(
